@@ -44,7 +44,7 @@ class RedisBackend(BackendBase):
             cntr = 0
         return cntr
 
-    def _inc():
+    def _inc(self):
         return self.conn.hincrby('jsondb', self.cntrkey)
 
     def get_children_count(self, id):
@@ -80,7 +80,7 @@ class RedisBackend(BackendBase):
 
     def iter_children(self, parent_id, value=None, only_one=False):
         key = self._get_children_key(parent_id)
-        for id in self.conn.lrange(key):
+        for id in self.conn.lrange(key, 0, -1):
             yield self.get_row(id)
 
 
@@ -100,10 +100,10 @@ class RedisBackend(BackendBase):
         return id
 
     def get_path(self):
-        return self.url
+        return str(self.url)
  
     def get_url(self):
-        return self.url
+        return str(self.url)
  
     def commit(self):
         pass
@@ -140,7 +140,7 @@ class RedisBackend(BackendBase):
             'type': type,
             'value': value,
         })
-        parent = self._get_row(parent_id)
+        parent = self.get_row(parent_id)
         if parent['type'] == LIST:
             key = self._get_children_key(parent_id)
             self.conn.lpush(key, id)
